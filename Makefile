@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -g -Wextra
+CFLAGS = -Wall -g
 proiect: main.c bmp_io_rgb.h 
 		$(CC) $(CFLAGS) main.c -o proiect
 clean:

@@ -48,7 +48,10 @@ int main(int argc, char **argv)
     {
       for(int i = 0; cmd[i]; i++)
         cmd[i] = toupper((unsigned char)cmd[i]);
-      printf("%s\n", cmd);
+      if(strcmp(cmd, "FILTER") == 0)
+        printf("%s ", cmd);
+      else 
+        printf("%s\n", cmd);
       if(strcmp(cmd, "CREATE") == 0)
         {
           int cols, rows;
@@ -75,7 +78,6 @@ int main(int argc, char **argv)
           int R, G, B;
           fscanf(f, "%s %d %d %d", tag, &R, &G, &B);
           Image *im = find_img(tag);
-          printf("CLEARED %s: N=%d M=%d\n", path, im->N, im->M);
           clear_img(im->pix, im->N, im->M, R, G, B);
         }
       else if(strcmp(cmd, "PASTE") == 0)
@@ -97,7 +99,8 @@ int main(int argc, char **argv)
           int l, r, t, b, nN, nM;
           fscanf(f, "%s %d %d %d %d", tag, &l, &r, &t, &b);
           Image *im = find_img(tag);
-          add_img(tag, crop(im->pix, im->N, im->M, l, r, t, b, &nN, &nM), nN, nM);
+          unsigned char ***out = crop(im->pix, im->N, im->M, l, r, t, b, &nN, &nM); 
+          add_img(tag, out, nN, nM);
         }
       else if(strcmp(cmd, "GRAYSCALE") == 0)
         {
@@ -110,38 +113,28 @@ int main(int argc, char **argv)
           int side;
           fscanf(f, "%s", tag);
           Image *im = find_img(tag);
-          add_img(tag, make_square(im->pix, im->N, im->M, &side), side, side);
+          unsigned char ***out = make_square(im->pix, im->N, im->M, &side);
+          add_img(tag, out, side, side);
         }
-      else if(strcmp(cmd, "BOX") == 0)
+      else if(strcmp(cmd, "FILTER") == 0)
         {
-          fscanf(f, "%s", tag);
+          char type[32];
+          fscanf(f, "%s %s", type, tag);
+          for(int i = 0; type[i]; i++)
+            type[i] = toupper((unsigned char)type[i]);
+          printf("%s\n", type);
           Image *im = find_img(tag);
-          box_blur(im->pix, im->N, im->M); 
-        }
-      else if(strcmp(cmd, "GAUSS") == 0)
-        {
-          fscanf(f, "%s", tag);
-          Image *im = find_img(tag);
-          gaussian_blur(im->pix, im->N, im->M); 
-        }
-      else if(strcmp(cmd, "SHARPEN") == 0)
-        {
-          fscanf(f, "%s", tag);
-          Image *im = find_img(tag);
-          sharpen(im->pix, im->N, im->M); 
-        }
-      else if(strcmp(cmd, "LAPLACE") == 0)
-        {
-          fscanf(f, "%s", tag);
-          Image *im = find_img(tag);
-          laplacian(im->pix, im->N, im->M); 
-        }
-      else if(strcmp(cmd, "EMBOSS") == 0)
-        {
-          fscanf(f, "%s", tag);
-          Image *im = find_img(tag);
-          emboss(im->pix, im->N, im->M); 
-        }
+          if(strcmp(type, "BOX") == 0)
+            box_blur(im->pix, im->N, im->M);
+          else if(strcmp(type, "GAUSS") == 0)
+            gaussian_blur(im->pix, im->N, im->M);
+          else if(strcmp(type, "SHARPEN") == 0)
+            sharpen(im->pix, im->N, im->M);
+          else if(strcmp(type, "LAPLACE") == 0)
+            laplacian(im->pix, im->N, im->M);
+          else if(strcmp(type, "EMBOSS") == 0)
+            emboss(im->pix, im->N, im->M);
+        } 
     }
   fclose(f);
   for(int i = 0; i < n_imgs; i++)

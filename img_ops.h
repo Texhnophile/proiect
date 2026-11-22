@@ -2,6 +2,13 @@
 #define IMG_OPS_H
 #include <stdlib.h>
 
+static inline unsigned char max255(int v)
+{
+  if(v < 0) return 0;
+  if(v > 255) return 255;
+  return v;
+}
+
 static inline void free_img(unsigned char ***img, int N, int M)
 {
   for(int i = 0; i < N; i++)
@@ -84,6 +91,7 @@ static inline int paste_image(unsigned char ***base_img, int N_base, int M_base,
 
 static inline void set_pixel(unsigned char ***img, int N, int M, int R, int G, int B, int r, int c)
 {
+  if(r < 0 || r >= N || c < 0 || c >= M) return;
   img[r][c][0] = R;
   img[r][c][1] = G;
   img[r][c][2] = B;
@@ -91,12 +99,12 @@ static inline void set_pixel(unsigned char ***img, int N, int M, int R, int G, i
 
 static inline void draw_rectangle(unsigned char ***img, int N, int M, int left, int right, int up, int down, int R, int G, int B)
 {
-  for(int j = left; j < right; j++)
+  for(int j = left; j <= right; j++)
     {
       set_pixel(img, N, M, R, G, B, up, j);
       set_pixel(img, N, M, R, G, B, down, j);
     }
-  for(int i = up; up < down; i++)
+  for(int i = up; up <= down; i++)
     {
       set_pixel(img, N, M, R, G, B, i, left);
       set_pixel(img, N, M, R, G, B, i, right);
@@ -109,7 +117,7 @@ static inline void clear_img(unsigned char ***img, int N, int M, int R, int G, i
       set_pixel(img, N, M, R, G, B, i, j);
 }
 
-static inline void convolve3x3(unsigned char ***img, int N, int M, const int kernel[3][3], int divisor)
+static inline void convolve3x3(unsigned char ***img, int N, int M, const int kernel[3][3], int divisor, int offset)
 {
   unsigned char ***src = alloc_img(N, M);
   for(int i = 0; i < N; i++)
@@ -131,7 +139,7 @@ static inline void convolve3x3(unsigned char ***img, int N, int M, const int ker
                 if(c >= M) c = M - 1;
                 sum += kernel[di + 1][dj + 1] * src[r][c][k];
               }
-          img[i][j][k] = sum / divisor;
+          img[i][j][k] = max255(sum / divisor + offset);
         }
   free_img(src, N, M);
 }
@@ -141,7 +149,7 @@ static inline void box_blur(unsigned char ***img, int N, int M)
   const int kernel[3][3] = {{1, 1, 1},
                             {1, 1, 1},
                             {1, 1, 1}};
-  convolve3x3(img, N, M, kernel, 9);
+  convolve3x3(img, N, M, kernel, 9, 0);
 }
 
 static inline void gaussian_blur(unsigned char ***img, int N, int M)
@@ -149,7 +157,7 @@ static inline void gaussian_blur(unsigned char ***img, int N, int M)
   const int kernel[3][3] = {{1, 2, 1},
                             {2, 4, 2},
                             {1, 2, 1}};
-  convolve3x3(img, N, M, kernel, 16);
+  convolve3x3(img, N, M, kernel, 16, 0);
 }
 
 static inline void sharpen(unsigned char ***img, int N, int M)
@@ -157,7 +165,7 @@ static inline void sharpen(unsigned char ***img, int N, int M)
   const int kernel[3][3] = {{ 0, -1,  0},
                             {-1,  5, -1},
                             { 0, -1,  0}};
-  convolve3x3(img, N, M, kernel, 1);
+  convolve3x3(img, N, M, kernel, 1, 0);
 }
 
 static inline void laplacian(unsigned char ***img, int N, int M)
@@ -165,7 +173,7 @@ static inline void laplacian(unsigned char ***img, int N, int M)
   const int kernel[3][3] = {{-1, -1, -1},
                             {-1,  8, -1},
                             {-1, -1, -1}};
-  convolve3x3(img, N, M, kernel, 1);
+  convolve3x3(img, N, M, kernel, 1, 0);
 }
 
 static inline void emboss(unsigned char ***img, int N, int M)
@@ -173,7 +181,7 @@ static inline void emboss(unsigned char ***img, int N, int M)
   const int kernel[3][3] = {{-2, -1, 0},
                             {-1,  1, 1},
                             { 0,  1, 2}};
-  convolve3x3(img, N, M, kernel, 1);
+  convolve3x3(img, N, M, kernel, 1, 128);
 }
 #endif
 
