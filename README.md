@@ -1,12 +1,20 @@
-Process .bmp images. Run the binary with a file of instructions.
-Syntax:
-CREATE tag cols rows
-LOAD tag path
-SAVE tag path
-CLEAR tag R G B
-PASTE dest src x y
-RECTANGLE tag left right top bottom R G B
-CROP tag left right top bottom
-GRAYSCALE tag
-SQUARE tag
-FILTER type (BOX, GAUSS, SHARPEN, LAPLACE, EMBOSS) tag
+# BMP Image Processor
+
+Process `.bmp` images. Run the binary with a file of instructions, one instruction per line.
+
+## Function
+
+| Function | Syntax |
+|---|---|
+| `CREATE` | `CREATE tag cols rows` |
+| `LOAD` | `LOAD tag path` |
+| `SAVE` | `SAVE tag path` |
+| `CLEAR` | `CLEAR tag R G B` |
+| `PASTE` | `PASTE dest src x y` |
+| `RECTANGLE` | `RECTANGLE tag left right top bottom R G B` |
+| `CROP` | `CROP tag left right top bottom` |
+| `GRAYSCALE` | `GRAYSCALE tag` |
+| `SQUARE` | `SQUARE tag` |
+| `FILTER` | `FILTER filter tag` |
+
+`filter` is either `BOX`, `GAUSS`, `SHARPEN`, `LAPLACE`, or `EMBOSS`.
